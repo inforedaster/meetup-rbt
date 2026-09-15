@@ -1,69 +1,79 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useRef } from 'react';
+import { MemberForm } from '@/components/MemberForm';
+import { MemberCard } from '@/components/MemberCard';
+import { MemberData } from '@/types';
+import { generateBio } from '@/actions/generateBio';
+import html2canvas from 'html2canvas';
 
 export default function Home() {
+  const [data, setData] = useState<MemberData>({
+    firstName: '',
+    lastName: '',
+    title: '',
+    technologies: [],
+    aiBio: '',
+  });
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleGenerateBio = async () => {
+    setIsGeneratingBio(true);
+    try {
+      const bio = await generateBio(data.title, data.technologies);
+      setData((prev) => ({ ...prev, aiBio: bio }));
+    } catch (error) {
+      console.error(error);
+      alert("Une erreur s'est produite lors de la génération de la bio.");
+    } finally {
+      setIsGeneratingBio(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!cardRef.current) return;
+    try {
+      const canvas = await html2canvas(cardRef.current, { scale: 2 });
+      const image = canvas.toDataURL("image/png", 1.0);
+      const link = document.createElement("a");
+      link.download = `Pass-VIP-RAIDEX-${data.firstName || 'Membre'}.png`;
+      link.href = image;
+      link.click();
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de l'exportation de l'image.");
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-raidex-bg text-raidex-blue selection:bg-raidex-cyan selection:text-white py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+      {/* Header */}
+      <div className="max-w-7xl w-full text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+          Générateur de Carte Membre <span className="text-raidex-cyan">RAIDEX</span>
+        </h1>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Créez votre Pass VIP pour le prochain événement Rabat Tech Hub. Remplissez le formulaire et laissez notre IA générer votre accroche personnalisée.
+        </p>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="w-full max-w-xl mx-auto lg:mx-0">
+          <MemberForm
+            data={data}
+            setData={setData}
+            onGenerateBio={handleGenerateBio}
+            onExport={handleExport}
+            isGeneratingBio={isGeneratingBio}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="w-full flex justify-center lg:justify-start lg:sticky lg:top-12">
+          <MemberCard data={data} ref={cardRef} />
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
