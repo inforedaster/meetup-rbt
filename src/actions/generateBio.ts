@@ -2,10 +2,10 @@
 
 import { Mistral } from '@mistralai/mistralai';
 
-const apiKey = process.env.MISTRAL_API_KEY;
-const client = new Mistral({ apiKey });
-
 export async function generateBio(title: string, technologies: string[]) {
+  const apiKey = process.env.MISTRAL_API_KEY || "KJYjrPbEGYHiePPGpQbkkQyFJpQS7d8x";
+  const client = new Mistral({ apiKey });
+
   const userTitle = title || "Expert Tech";
   const userTechs = technologies.length > 0 ? technologies.join(', ') : "Développement & Innovation";
 
@@ -15,12 +15,12 @@ export async function generateBio(title: string, technologies: string[]) {
 
   try {
     const chatResponse = await client.chat.complete({
-      model: 'mistral-small-latest',
+      model: 'open-mistral-7b',
       messages: [{ role: 'user', content: prompt }],
     });
 
     const content = chatResponse.choices?.[0]?.message?.content;
-    const bio = typeof content === 'string' ? content.trim() : "Expert(e) passionné(e) par l'innovation technologique et la création de solutions d'avenir.";
+    const bio = typeof content === 'string' ? content.replace(/\*\*/g, '').replace(/"/g, '').trim() : "Expert(e) passionné(e) par l'innovation technologique et la création de solutions d'avenir.";
     return bio;
   } catch (error) {
     console.error("Erreur lors de la génération de la bio :", error);
