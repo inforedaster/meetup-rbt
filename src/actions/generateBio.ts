@@ -6,12 +6,11 @@ const apiKey = process.env.MISTRAL_API_KEY;
 const client = new Mistral({ apiKey });
 
 export async function generateBio(title: string, technologies: string[]) {
-  if (!title) {
-    throw new Error("Le titre est requis pour générer la bio.");
-  }
+  const userTitle = title || "Expert Tech";
+  const userTechs = technologies.length > 0 ? technologies.join(', ') : "Développement & Innovation";
 
   const prompt = `Tu es un expert en branding personnel pour les professionnels de la tech.
-  Rédige une phrase d'accroche (bio) très courte, percutante et professionnelle (maximum 15 mots) pour une personne ayant le rôle de "${title}" et maîtrisant les technologies suivantes : ${technologies.join(', ')}. 
+  Rédige une phrase d'accroche (bio) très courte, percutante et professionnelle (maximum 15 mots) pour une personne ayant le rôle de "${userTitle}" et maîtrisant les technologies suivantes : ${userTechs}. 
   La phrase doit être en français, sans guillemets, sans hashtags et prête à être affichée sur un badge de conférence (Pass VIP).`;
 
   try {

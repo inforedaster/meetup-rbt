@@ -127,7 +127,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           <button
             type="button"
             onClick={onGenerateBio}
-            disabled={isGeneratingBio || !data.title || data.technologies.length === 0}
+            disabled={isGeneratingBio}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-raidex-blue text-white rounded-xl font-medium hover:bg-raidex-blue/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGeneratingBio ? (
